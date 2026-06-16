@@ -1,0 +1,6 @@
+{
+  "name": "因爱而美小雨如酥生活美学馆",
+  "description": "关于经典阅读与生活美学的个人纯净写作空间，伴随手作陶器、草木干花与墨香，寻找平和宁静的心智自留地。",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
