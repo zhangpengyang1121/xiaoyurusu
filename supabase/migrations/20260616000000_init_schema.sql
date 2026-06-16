@@ -267,3 +267,17 @@ CREATE POLICY "管理员可删除blog-assets" ON storage.objects
 -- 注意: 你需要在 Supabase Dashboard 中手动将你的用户 role 改为 'admin'
 -- 或者在 profiles 表中执行:
 -- UPDATE public.profiles SET role = 'admin' WHERE email = 'yinaiermei4431@outlook.com';
+
+-- ============================================
+-- 10. increment_post_view 函数
+-- ============================================
+CREATE OR REPLACE FUNCTION public.increment_post_view(post_id UUID)
+RETURNS VOID AS $$
+BEGIN
+    UPDATE public.posts
+    SET views = COALESCE(views, 0) + 1
+    WHERE id = post_id;
+END;
+$$ LANGUAGE plpgsql;
+
+GRANT EXECUTE ON FUNCTION public.increment_post_view(UUID) TO anon, authenticated;

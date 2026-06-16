@@ -8,7 +8,8 @@ import {
   replyComment, 
   deleteComment, 
   toggleLike, 
-  checkHasLiked 
+  checkHasLiked,
+  incrementView 
 } from '../clientApi';
 import { 
   ArrowLeft, 
@@ -45,14 +46,14 @@ export default function BlogDetail({ post, user, onBack, onLogin, onRefresh }: B
   const [showWechatQR, setShowWechatQR] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
 
-  const isAdmin = user?.email === 'yinaiermei4431@outlook.com';
+  const isAdmin = user?.role === 'admin';
 
   // 1. Atomically increment views on mounting (only once per post visit)
   useEffect(() => {
     let active = true;
     const incView = async () => {
       try {
-        await fetch(`/api/posts/${post.id}/view`, { method: 'POST' });
+        await incrementView(post.id);
         if (onRefresh) onRefresh();
       } catch (err) {
         console.error('Background view increment error:', err);

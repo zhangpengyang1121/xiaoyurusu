@@ -17,7 +17,7 @@ export default function Header({
   onLogin,
   onLogout,
 }: HeaderProps) {
-  const isAdmin = user?.email === 'yinaiermei4431@outlook.com';
+  const isAdmin = user?.role === 'admin';
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-gray-100 bg-white/80 backdrop-blur-md">

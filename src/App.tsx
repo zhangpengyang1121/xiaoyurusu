@@ -34,7 +34,7 @@ export default function App() {
   const [isSeeding, setIsSeeding] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
 
-  const isAdmin = user?.email === 'yinaiermei4431@outlook.com';
+  const isAdmin = user?.role === 'admin';
 
   // 1. Fetch posts initially and when user authentication state changes
   const loadPosts = async () => {
