@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Post } from '../types';
 import Markdown from 'react-markdown';
-import { PenTool, Eye, CheckCircle2, X, Sparkles, AlertCircle, Compass, FileText, Upload } from 'lucide-react';
+import { PenTool, Eye, CheckCircle2, X, AlertCircle, Compass, FileText, Upload } from 'lucide-react';
 
 interface BlogEditorProps {
   post: Post | null;
@@ -31,11 +31,6 @@ export default function BlogEditor({ post, onSave, onCancel }: BlogEditorProps) 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isImportingWord, setIsImportingWord] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
-
-  // AI assistant state
-  const [aiPrompt, setAiPrompt] = useState('');
-  const [isGeneratingAI, setIsGeneratingAI] = useState(false);
-  const [showAIAssist, setShowAIAssist] = useState(false);
 
   // Initialize fields if editing existing post
   useEffect(() => {
@@ -138,47 +133,6 @@ export default function BlogEditor({ post, onSave, onCancel }: BlogEditorProps) 
     }
   };
 
-  const handleAIGenerate = async () => {
-    if (!aiPrompt.trim()) return;
-    setIsGeneratingAI(true);
-    setErrorMsg('');
-    try {
-      const response = await fetch('/api/generate-post', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ prompt: aiPrompt }),
-      });
-      
-      if (!response.ok) {
-        const errText = await response.text();
-        throw new Error(errText || 'AI Assistant could not generate structure.');
-      }
-      
-      const resData = await response.json();
-      setTitle(resData.title || title);
-      if (resData.categories && Array.isArray(resData.categories)) {
-        setCategories(resData.categories);
-      } else if (resData.category) {
-        setCategories([resData.category]);
-      }
-      setSummary(resData.summary || summary);
-      setContent(resData.content || content);
-      if (resData.tags) {
-        setTagsText(resData.tags.join(', '));
-      }
-      setSlug(generateSlug(resData.title || title));
-      setShowAIAssist(false);
-      setAiPrompt('');
-    } catch (err: any) {
-      console.error(err);
-      setErrorMsg(err.message || 'AI 辅助生成发生意外错误，请检查服务器连接。');
-    } finally {
-      setIsGeneratingAI(false);
-    }
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim() || categories.length === 0 || !content.trim()) {
@@ -247,15 +201,6 @@ export default function BlogEditor({ post, onSave, onCancel }: BlogEditorProps) 
           </label>
 
           <button
-            onClick={() => setShowAIAssist(!showAIAssist)}
-            className="flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-3.5 py-1.5 font-sans text-xs font-semibold text-amber-700 shadow-2xs hover:bg-amber-100 transition-colors cursor-pointer"
-            id="ai-prompt-trigger-btn"
-          >
-            <Sparkles className="h-3.5 w-3.5 fill-amber-500 text-amber-500" />
-            <span>AI 辅助创作</span>
-          </button>
-          
-          <button 
             onClick={onCancel}
             className="rounded-full border border-gray-200 bg-white p-1.5 text-gray-400 hover:text-gray-900 transition-colors cursor-pointer"
             title="关闭编辑器"
@@ -264,46 +209,6 @@ export default function BlogEditor({ post, onSave, onCancel }: BlogEditorProps) 
           </button>
         </div>
       </div>
-
-      {/* AI Assistant Modal/Card in-place */}
-      {showAIAssist && (
-        <div className="mb-8 rounded-2xl border border-amber-100 bg-amber-50/40 p-5 animated-fade" id="ai-generator-panel">
-          <div className="flex items-start gap-3">
-            <Sparkles className="h-5 w-5 text-amber-600 mt-0.5" />
-            <div className="flex-1">
-              <h4 className="font-display text-sm font-semibold text-amber-800">
-                双子星 (Gemini) 智能辅助创作
-              </h4>
-              <p className="mt-1 font-sans text-xs text-amber-600/80 leading-relaxed">
-                输入您的博文写作主题、大纲或核心观点。AI 将为您生成精心编排的文章标题、分类分类、标签摘要以及一篇美轮美奂的 Markdown 完整博客大纲。
-              </p>
-              
-              <div className="mt-4 flex gap-2.5">
-                <input
-                  type="text"
-                  value={aiPrompt}
-                  onChange={(e) => setAiPrompt(e.target.value)}
-                  placeholder="博客主题、例如：'写一篇关于 Tailwind v4 与现代化 CSS 设计的文章和大纲'..."
-                  className="h-10 flex-1 rounded-xl border border-amber-200 bg-white px-3.5 font-sans text-xs text-gray-800 outline-hidden focus:border-amber-400"
-                  id="ai-prompt-input"
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') handleAIGenerate();
-                  }}
-                />
-                <button
-                  type="button"
-                  onClick={handleAIGenerate}
-                  disabled={isGeneratingAI || !aiPrompt.trim()}
-                  className="flex items-center gap-1.5 rounded-xl bg-amber-600 px-4 py-1.5 font-sans text-xs font-semibold text-white shadow-xs transition-opacity hover:opacity-90 disabled:opacity-40 cursor-pointer"
-                  id="ai-prompt-submit"
-                >
-                  {isGeneratingAI ? '创作中...' : '生成大纲'}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Error reporting banner */}
       {errorMsg && (
