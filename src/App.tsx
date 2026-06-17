@@ -163,7 +163,7 @@ export default function App() {
               <Sparkles className="mx-auto h-6 w-6 text-amber-500" />
               <h4 className="mt-2.5 font-display text-sm font-semibold text-amber-800">首次建立个人博屋：一键种子发布样章</h4>
               <p className="mt-1.5 font-sans text-xs text-amber-600 max-w-md mx-auto">
-                尊敬的站长！目前您的 Firestore 数据库没有检测到任何文章。点击下方的一键发布，即可自动生成 3 篇为您量身定做、具备完整 MarkDown、标签和分类的阅读与生活美学优雅博客，秒速激活整站视觉！
+                尊敬的站长！目前您的博客还没有发布任何文章。点击下方的一键发布，即可自动生成 3 篇为您量身定做、具备完整 MarkDown、标签和分类的阅读与生活美学优雅博客，秒速激活整站视觉！
               </p>
               <button
                 type="button"

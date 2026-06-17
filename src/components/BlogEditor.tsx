@@ -194,7 +194,7 @@ export default function BlogEditor({ post, onSave, onCancel }: BlogEditorProps) 
       .split(',')
       .map((t) => t.trim())
       .filter((t) => t.length > 0 && t.length <= 30)
-      .slice(0, 10); // max 10 tags limit for firestore array guarding
+      .slice(0, 10); // max 10 tags limit for database array guarding
 
     try {
       await onSave({
