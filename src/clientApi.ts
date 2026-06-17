@@ -142,20 +142,25 @@ export async function fetchPosts(): Promise<Post[]> {
 
 export async function createPost(postData: Partial<Post>): Promise<Post> {
   const user = getSavedUser();
+  const insertData: any = {
+    title: postData.title,
+    slug: postData.slug,
+    content: postData.content,
+    summary: postData.summary || '',
+    category: postData.category || '随笔',
+    categories: postData.categories || [postData.category || '随笔'],
+    tags: postData.tags || [],
+    published: postData.published !== false,
+    author_id: user?.uid,
+    author_name: user?.displayName || '小雨如酥',
+  };
+  if (postData.createdAt) {
+    insertData.created_at = postData.createdAt;
+  }
+
   const { data, error } = await supabase
     .from('posts')
-    .insert({
-      title: postData.title,
-      slug: postData.slug,
-      content: postData.content,
-      summary: postData.summary || '',
-      category: postData.category || '随笔',
-      categories: postData.categories || [postData.category || '随笔'],
-      tags: postData.tags || [],
-      published: postData.published !== false,
-      author_id: user?.uid,
-      author_name: user?.displayName || '小雨如酥',
-    })
+    .insert(insertData)
     .select()
     .single();
 
@@ -180,18 +185,23 @@ export async function createPost(postData: Partial<Post>): Promise<Post> {
 }
 
 export async function updatePost(id: string, postData: Partial<Post>): Promise<Post> {
+  const updateData: any = {
+    title: postData.title,
+    slug: postData.slug,
+    content: postData.content,
+    summary: postData.summary,
+    category: postData.category,
+    categories: postData.categories,
+    tags: postData.tags,
+    published: postData.published,
+  };
+  if (postData.createdAt) {
+    updateData.created_at = postData.createdAt;
+  }
+
   const { data, error } = await supabase
     .from('posts')
-    .update({
-      title: postData.title,
-      slug: postData.slug,
-      content: postData.content,
-      summary: postData.summary,
-      category: postData.category,
-      categories: postData.categories,
-      tags: postData.tags,
-      published: postData.published,
-    })
+    .update(updateData)
     .eq('id', id)
     .select()
     .single();

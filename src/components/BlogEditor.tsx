@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Post } from '../types';
 import Markdown from 'react-markdown';
-import { PenTool, Eye, CheckCircle2, X, AlertCircle, Compass, FileText, Upload } from 'lucide-react';
+import { PenTool, Eye, CheckCircle2, X, AlertCircle, Compass, FileText, Upload, Trash2, Calendar } from 'lucide-react';
 import mammoth from 'mammoth';
 
 interface BlogEditorProps {
@@ -15,11 +15,13 @@ interface BlogEditorProps {
     categories?: string[];
     tags: string[];
     published: boolean;
+    createdAt?: string;
   }) => Promise<void>;
   onCancel: () => void;
+  onDelete?: (postId: string) => Promise<void>;
 }
 
-export default function BlogEditor({ post, onSave, onCancel }: BlogEditorProps) {
+export default function BlogEditor({ post, onSave, onCancel, onDelete }: BlogEditorProps) {
   const [title, setTitle] = useState('');
   const [slug, setSlug] = useState('');
   const [categories, setCategories] = useState<string[]>(['读书']);
@@ -27,10 +29,12 @@ export default function BlogEditor({ post, onSave, onCancel }: BlogEditorProps) 
   const [content, setContent] = useState('');
   const [tagsText, setTagsText] = useState('');
   const [published, setPublished] = useState(false);
+  const [createdAt, setCreatedAt] = useState('');
   
   const [activeTab, setActiveTab] = useState<'write' | 'preview'>('write');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isImportingWord, setIsImportingWord] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
   // Initialize fields if editing existing post
@@ -47,6 +51,12 @@ export default function BlogEditor({ post, onSave, onCancel }: BlogEditorProps) 
       setContent(post.content || '');
       setTagsText(post.tags ? post.tags.join(', ') : '');
       setPublished(post.published ?? false);
+      if (post.createdAt) {
+        const date = new Date(post.createdAt);
+        if (!isNaN(date.getTime())) {
+          setCreatedAt(date.toISOString().slice(0, 16));
+        }
+      }
     } else {
       // Defaults for new post
       setTitle('');
@@ -149,11 +159,27 @@ export default function BlogEditor({ post, onSave, onCancel }: BlogEditorProps) 
         categories,
         tags,
         published,
+        createdAt: createdAt ? new Date(createdAt).toISOString() : undefined,
       });
     } catch (err: any) {
       setErrorMsg(err.message || '保存文章时出现错误。');
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!post || !onDelete) return;
+    const confirmed = window.confirm(`确定要删除文章《${post.title}》吗？此操作不可撤销。`);
+    if (!confirmed) return;
+
+    setIsDeleting(true);
+    setErrorMsg('');
+    try {
+      await onDelete(post.id);
+    } catch (err: any) {
+      setErrorMsg(err.message || '删除文章时出现错误。');
+      setIsDeleting(false);
     }
   };
 
@@ -196,6 +222,18 @@ export default function BlogEditor({ post, onSave, onCancel }: BlogEditorProps) 
           >
             <X className="h-4 w-4" />
           </button>
+
+          {post && onDelete && (
+            <button
+              onClick={handleDelete}
+              disabled={isDeleting}
+              className="rounded-full border border-red-100 bg-red-50 p-1.5 text-red-500 hover:border-red-200 hover:bg-red-100 hover:text-red-600 transition-colors cursor-pointer disabled:opacity-50"
+              title="删除此文章"
+              id="delete-post-button"
+            >
+              <Trash2 className="h-4 w-4" />
+            </button>
+          )}
         </div>
       </div>
 
@@ -364,26 +402,43 @@ export default function BlogEditor({ post, onSave, onCancel }: BlogEditorProps) 
         </div>
 
         {/* Action Bottom Controls */}
-        <div className="flex flex-wrap items-center justify-between gap-4 border-t border-gray-100 pt-6">
-          {/* Draft toggle checkbox */}
-          <label className="flex cursor-pointer items-center gap-2 font-sans text-sm select-none">
-            <input
-              type="checkbox"
-              checked={published}
-              onChange={(e) => setPublished(e.target.checked)}
-              className="h-4 w-4 rounded-md border-gray-200 text-gray-900 focus:ring-gray-900 cursor-pointer"
-              id="draft-status-toggle"
-            />
-            <div className="flex flex-col">
-              <span className="font-semibold text-gray-700">公开并发布此文章</span>
-              <span className="text-[10px] text-gray-400">
-                勾选即将文章直接向所有读者公开；否则会存为仅自己可见的"草稿"。
-              </span>
+        <div className="flex flex-col gap-5 border-t border-gray-100 pt-6">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            {/* Draft toggle checkbox */}
+            <label className="flex cursor-pointer items-center gap-2 font-sans text-sm select-none">
+              <input
+                type="checkbox"
+                checked={published}
+                onChange={(e) => setPublished(e.target.checked)}
+                className="h-4 w-4 rounded-md border-gray-200 text-gray-900 focus:ring-gray-900 cursor-pointer"
+                id="draft-status-toggle"
+              />
+              <div className="flex flex-col">
+                <span className="font-semibold text-gray-700">公开并发布此文章</span>
+                <span className="text-[10px] text-gray-400">
+                  勾选即将文章直接向所有读者公开；否则会存为仅自己可见的"草稿"。
+                </span>
+              </div>
+            </label>
+
+            {/* Custom publish date input (admin/super_admin can override) */}
+            <div className="flex flex-col gap-1.5">
+              <label className="font-sans text-[11px] font-bold text-gray-500 flex items-center gap-1.5" htmlFor="editor-created-at-input">
+                <Calendar className="h-3 w-3 text-gray-400" />
+                <span>自定义发布日期 (可选)</span>
+              </label>
+              <input
+                id="editor-created-at-input"
+                type="datetime-local"
+                value={createdAt}
+                onChange={(e) => setCreatedAt(e.target.value)}
+                className="h-9 rounded-lg border border-gray-100 bg-white px-3 font-sans text-xs text-gray-700 outline-hidden transition-all focus:border-gray-300"
+              />
             </div>
-          </label>
+          </div>
 
           {/* Form buttons */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center justify-end gap-3">
             <button
               type="button"
               disabled={isSubmitting}

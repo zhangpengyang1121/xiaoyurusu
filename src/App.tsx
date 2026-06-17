@@ -7,6 +7,7 @@ import {
   fetchPosts, 
   createPost, 
   updatePost, 
+  deletePost,
   seedServerSamples 
 } from './clientApi';
 import { ViewTab } from './types';
@@ -86,6 +87,7 @@ export default function App() {
     categories?: string[];
     tags: string[];
     published: boolean;
+    createdAt?: string;
   }) => {
     if (!user) return;
     try {
@@ -99,6 +101,21 @@ export default function App() {
       setCurrentTab('feed');
     } catch (err: any) {
       alert(err.message || '文章保存失败。');
+    }
+  };
+
+  // 3b. Delete a post (admin / super_admin)
+  const handleDeletePost = async (postId: string) => {
+    if (!user) return;
+    try {
+      await deletePost(postId);
+      await loadPosts();
+      setEditingPost(null);
+      setSelectedPost(null);
+      setCurrentTab('feed');
+    } catch (err: any) {
+      alert(err.message || '删除文章失败。');
+      throw err;
     }
   };
 
@@ -214,6 +231,7 @@ export default function App() {
           post={editingPost}
           onSave={handleSavePost}
           onCancel={() => handleTabChange('feed')}
+          onDelete={handleDeletePost}
         />
       );
     }
