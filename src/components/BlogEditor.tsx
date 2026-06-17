@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Post } from '../types';
 import Markdown from 'react-markdown';
 import { PenTool, Eye, CheckCircle2, X, AlertCircle, Compass, FileText, Upload } from 'lucide-react';
+import mammoth from 'mammoth';
 
 interface BlogEditorProps {
   post: Post | null;
@@ -88,45 +89,33 @@ export default function BlogEditor({ post, onSave, onCancel }: BlogEditorProps) 
     setIsImportingWord(true);
     setErrorMsg('');
     try {
-      const storedUser = localStorage.getItem('blog_user');
-      const currentUser = storedUser ? JSON.parse(storedUser) : null;
-      const userEmail = currentUser?.email || '';
-
-      const response = await fetch('/api/convert-docx', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-          'x-user-email': userEmail,
-        },
-        body: file,
-      });
-
-      if (!response.ok) {
-        const errText = await response.text();
-        throw new Error(errText || 'Word 转化服务器未成功吐出数据，请确保是在站长登录状态下操作。');
-      }
-
-      const data = await response.json();
+      const arrayBuffer = await file.arrayBuffer();
+      const result = await mammoth.extractRawText({ arrayBuffer });
       
-      if (data.title) {
-        setTitle(data.title);
+      const text = result.value;
+      const lines = text.split('\n').filter(line => line.trim());
+      
+      const title = lines[0] || '无标题';
+      const content = lines.slice(1).join('\n\n');
+      
+      if (title) {
+        setTitle(title);
         if (!post) {
-          setSlug(generateSlug(data.title));
+          setSlug(generateSlug(title));
         }
       }
       
-      if (data.markdown) {
-        setContent(data.markdown);
+      if (content) {
+        setContent(content);
       }
 
-      if (data.summary) {
-        setSummary(data.summary);
-      }
+      const summary = content.slice(0, 200).replace(/\n/g, ' ') + (content.length > 200 ? '...' : '');
+      setSummary(summary);
       
       setActiveTab('write');
     } catch (err: any) {
       console.error(err);
-      setErrorMsg(err.message || '上传与解析 Word 文件发生未知错误。');
+      setErrorMsg('解析 Word 文件失败，请确保文件格式正确。');
     } finally {
       setIsImportingWord(false);
       e.target.value = '';
