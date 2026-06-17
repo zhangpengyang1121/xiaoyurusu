@@ -5,7 +5,7 @@ export interface BlogUser {
   email: string;
   displayName: string;
   photoURL?: string;
-  role?: 'admin' | 'reader';
+  role?: 'super_admin' | 'admin' | 'reader';
 }
 
 export interface Post {

@@ -46,7 +46,7 @@ export default function BlogDetail({ post, user, onBack, onLogin, onRefresh }: B
   const [showWechatQR, setShowWechatQR] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
 
-  const isAdmin = user?.role === 'admin';
+  const isAdmin = user?.role === 'admin' || user?.role === 'super_admin';
 
   // 1. Atomically increment views on mounting (only once per post visit)
   useEffect(() => {
