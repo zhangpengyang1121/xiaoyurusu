@@ -1,5 +1,8 @@
 # Cloudflare Pages 配置
-# 此文件用于 Cloudflare Pages 部署
+
+name = "xiaoyurusu-blog"
+compatibility_date = "2024-01-01"
+compatibility_flags = ["nodejs_compat"]
 
 # 构建命令
 build_command = "npm run build"
@@ -7,9 +10,7 @@ build_command = "npm run build"
 # 构建输出目录
 build_output_dir = "dist"
 
-#  Node.js 版本
-compatibility_flags = ["nodejs_compat"]
-
 # 环境变量（在 Cloudflare Pages 设置中添加）
 # VITE_SUPABASE_URL=https://your-project.supabase.co
 # VITE_SUPABASE_ANON_KEY=your-anon-key
+# NODE_VERSION=20
