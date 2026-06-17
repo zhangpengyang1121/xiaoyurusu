@@ -83,7 +83,7 @@ export async function loginUser(email: string, password: string): Promise<BlogUs
     email: data.user.email || email,
     displayName: profile?.display_name || email.split('@')[0],
     photoURL: data.user.user_metadata?.avatar_url,
-    role: (profile?.role as 'admin' | 'reader') || 'reader',
+    role: (profile?.role as 'super_admin' | 'admin' | 'reader') || 'reader',
   };
   saveUser(user);
   return user;
