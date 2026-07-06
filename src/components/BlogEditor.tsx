@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Post } from '../types';
 import Markdown from 'react-markdown';
 import { PenTool, Eye, CheckCircle2, X, AlertCircle, Compass, FileText, Upload, Trash2, Calendar } from 'lucide-react';
-import mammoth from 'mammoth';
 
 interface BlogEditorProps {
   post: Post | null;
@@ -100,7 +99,11 @@ export default function BlogEditor({ post, onSave, onCancel, onDelete }: BlogEdi
     setErrorMsg('');
     try {
       const arrayBuffer = await file.arrayBuffer();
-      const result = await mammoth.extractRawText({ arrayBuffer });
+      
+      // Dynamic import to optimize bundle size
+      const mammothModule = await import('mammoth');
+      const mammothParser = mammothModule.default || mammothModule;
+      const result = await mammothParser.extractRawText({ arrayBuffer });
       
       const text = result.value;
       const lines = text.split('\n').filter(line => line.trim());
