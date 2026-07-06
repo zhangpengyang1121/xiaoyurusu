@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Post, Comment, BlogUser } from '../clientApi';
 import Markdown from 'react-markdown';
 import { 
@@ -324,9 +324,11 @@ export default function BlogDetail({ post, user, onBack, onLogin, onRefresh }: B
       </header>
 
       {/* Main Content Render area */}
-      <article className="markdown-body prose max-w-none transition-fade" id="blog-markdown-view">
-        <Markdown>{post.content}</Markdown>
-      </article>
+      {useMemo(() => (
+        <article className="markdown-body prose max-w-none transition-fade" id="blog-markdown-view">
+          <Markdown>{post.content}</Markdown>
+        </article>
+      ), [post.content])}
 
       {/* Tags section */}
       {post.tags && post.tags.length > 0 && (

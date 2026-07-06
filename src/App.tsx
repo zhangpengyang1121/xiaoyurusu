@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { 
   BlogUser, 
   Post, 
@@ -15,9 +15,11 @@ import { ViewTab } from './types';
 // Import components
 import Header from './components/Header';
 import BlogList from './components/BlogList';
-import BlogDetail from './components/BlogDetail';
-import BlogEditor from './components/BlogEditor';
 import LoginModal from './components/LoginModal';
+
+// Lazy loaded heavy components
+const BlogDetail = lazy(() => import('./components/BlogDetail'));
+const BlogEditor = lazy(() => import('./components/BlogEditor'));
 
 import { Sparkles, Loader2, Compass } from 'lucide-react';
 
@@ -262,7 +264,14 @@ export default function App() {
       />
 
       <main className="flex-1 pb-16">
-        {renderContent()}
+        <Suspense fallback={
+          <div className="flex min-h-[40vh] flex-col items-center justify-center gap-3 text-center">
+            <Loader2 className="h-7 w-7 animate-spin text-gray-400" />
+            <span className="font-sans text-xs text-gray-400">正在加载页面...</span>
+          </div>
+        }>
+          {renderContent()}
+        </Suspense>
       </main>
 
       {/* Elegant minimalist Human Credit footer */}

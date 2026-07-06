@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { Post } from '../types';
 import BlogCard from './BlogCard';
 import { Search, Compass, ListFilter, ArrowUpDown, Tag, Sparkles } from 'lucide-react';
+import { useDebounce } from '../hooks/useDebounce';
 
 interface BlogListProps {
   posts: Post[];
@@ -17,6 +18,8 @@ export default function BlogList({ posts, onPostSelect, onEditPost, isAdmin }: B
   const [selectedCategory, setSelectedCategory] = useState('全部');
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<SortOption>('newest');
+
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
 
   // Dynamically calculate active categories present in the system
   const categories = useMemo(() => {
@@ -70,8 +73,8 @@ export default function BlogList({ posts, onPostSelect, onEditPost, isAdmin }: B
     }
 
     // 4. Seach query filter
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase();
+    if (debouncedSearchQuery.trim()) {
+      const q = debouncedSearchQuery.toLowerCase();
       result = result.filter(
         (p) =>
           p.title.toLowerCase().includes(q) ||
@@ -103,7 +106,7 @@ export default function BlogList({ posts, onPostSelect, onEditPost, isAdmin }: B
     });
 
     return result;
-  }, [posts, selectedCategory, selectedTag, searchQuery, sortBy, isAdmin]);
+  }, [posts, selectedCategory, selectedTag, debouncedSearchQuery, sortBy, isAdmin]);
 
   const clearFilters = () => {
     setSelectedCategory('全部');
