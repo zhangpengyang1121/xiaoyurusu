@@ -45,21 +45,26 @@ async function main() {
     
     let content = fs.readFileSync(path.join(mdDir, file), 'utf8');
     
-    // Clean WeChat boilerplate
-    const garbagePatterns = [
-      /预览时标签不可点/g,
-      /微信扫一扫/g,
-      /关注该公众号/g,
-      /在小说阅读器读本章/g,
-      /轻点两下取消赞/g
+    // Remove header metadata
+    content = content.replace(/在小说阅读器读本章/g, '');
+    content = content.replace(/去阅读/g, '');
+
+    // Truncate at footer
+    const footerPatterns = [
+      '预览时标签不可点',
+      '微信扫一扫',
+      '关注该公众号',
+      '轻点两下取消赞'
     ];
     
     let cutoffIndex = content.length;
-    for (const pattern of garbagePatterns) {
-      pattern.lastIndex = 0;
-      const m = pattern.exec(content);
-      if (m && m.index < cutoffIndex) {
-        cutoffIndex = m.index;
+    for (const pattern of footerPatterns) {
+      const idx = content.indexOf(pattern);
+      if (idx !== -1 && idx < cutoffIndex) {
+        // Only consider it a footer if it's in the second half of the document to be safe
+        if (idx > content.length / 3) {
+          cutoffIndex = idx;
+        }
       }
     }
     
