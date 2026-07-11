@@ -285,7 +285,7 @@ export async function addComment(postId: string, commentData: Partial<Comment>):
       author_name: commentData.authorName || user?.displayName || '匿名读者',
       author_email: commentData.authorEmail || user?.email,
       author_avatar: commentData.authorAvatar || user?.photoURL,
-      approved: user?.role === 'admin',
+      approved: true,
     })
     .select()
     .single();

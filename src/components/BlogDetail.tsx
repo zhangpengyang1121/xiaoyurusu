@@ -141,7 +141,7 @@ export default function BlogDetail({ post, user, onBack, onLogin, onRefresh }: B
       if (onRefresh) onRefresh();
       
       if (!isAdmin) {
-        alert('您的评论观点已提交成功！因为您不是管理员，评论进入审核队列，审核通过后即可公开显示。');
+        alert('您的评论发表成功！');
       }
     } catch (err) {
       console.error('Add comment error:', err);
@@ -434,7 +434,7 @@ export default function BlogDetail({ post, user, onBack, onLogin, onRefresh }: B
             
             <div className="mt-1 flex flex-col sm:flex-row justify-between sm:items-center gap-2 text-xs text-gray-400">
               <span className="flex items-center gap-1 font-sans">
-                {!user ? '💡 游客留言评论需要通过博主审核才能公开可见。' : '✔️ 登录用户发表评论更为便捷。'}
+                {!user ? '💡 游客亦可直接留言发表评论。' : '✔️ 登录用户发表评论更为便捷。'}
               </span>
               <div className="flex items-center gap-3">
                 {!user && (
@@ -502,26 +502,14 @@ export default function BlogDetail({ post, user, onBack, onLogin, onRefresh }: B
                               Admin
                             </span>
                           )}
-                          {!comment.approved && (
-                            <span className="rounded-sm bg-amber-50 border border-amber-200 px-1 py-0.5 font-sans text-[8px] font-semibold text-amber-700">
-                              待审核 (Pending)
-                            </span>
-                          )}
+
                           <span className="font-mono text-[10px] text-gray-400">
                             {formatDate(comment.createdAt)}
                           </span>
                         </div>
 
                         <div className="flex items-center gap-2.5">
-                          {isAdmin && !comment.approved && (
-                            <button
-                              onClick={() => handleApproveComment(comment.id)}
-                              className="rounded bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-800 font-sans text-[10px] font-bold px-2 py-0.5 transition-colors cursor-pointer"
-                              id={`approve-comment-btn-${comment.id}`}
-                            >
-                              审核通过
-                            </button>
-                          )}
+
                           
                           {isAdmin && (
                             <button
