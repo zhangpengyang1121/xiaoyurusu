@@ -70,7 +70,10 @@ async function main() {
     
     content = content.substring(0, cutoffIndex).trim();
     
-    const summary = content.replace(/[#*`_\[\]()!\n]/g, ' ').replace(/\s+/g, ' ').substring(0, 150) + '...';
+    let textForSummary = content.replace(/!\[.*?\]\(.*?\)/g, ''); // strip images
+    textForSummary = textForSummary.replace(/\[.*?\]\(.*?\)/g, ''); // strip links
+    textForSummary = textForSummary.replace(/(http|https):\/\/[^\s]+/g, ''); // strip naked urls
+    const summary = textForSummary.replace(/[#*`_\[\]()!\n]/g, ' ').replace(/\s+/g, ' ').trim().substring(0, 150) + '...';
     
     const post = {
       title,
