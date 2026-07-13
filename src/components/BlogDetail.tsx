@@ -116,13 +116,13 @@ export default function BlogDetail({ post, user, onBack, onLogin, onRefresh }: B
     }
   };
 
-  // Handle comment writing (with guest and approval queue)
+  // Handle comment writing
   const handleAddComment = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newComment.trim()) return;
 
-    if (!user && !visitorName.trim()) {
-      alert('请输入您的称呼作为姓名标志。');
+    if (!user) {
+      alert('请先登录账号后再发表评论。');
       return;
     }
 
@@ -130,13 +130,11 @@ export default function BlogDetail({ post, user, onBack, onLogin, onRefresh }: B
     try {
       await addComment(post.id, {
         content,
-        authorName: user ? user.displayName : visitorName.trim(),
-        authorEmail: user ? user.email : visitorEmail.trim(),
-        authorAvatar: user?.photoURL || ''
+        authorName: user.displayName || '已登录用户',
+        authorEmail: user.email || '',
+        authorAvatar: user.photoURL || ''
       });
       setNewComment('');
-      setVisitorName('');
-      setVisitorEmail('');
       await loadComments();
       if (onRefresh) onRefresh();
       
@@ -379,33 +377,6 @@ export default function BlogDetail({ post, user, onBack, onLogin, onRefresh }: B
             <span>发表您的评论观点</span>
           </h4>
 
-          {/* Guest identification row (Only visible if NOT logged-in) */}
-          {!user && (
-            <div className="grid gap-3 sm:grid-cols-2" id="visitor-identity-form">
-              <div className="flex flex-col gap-1">
-                <label className="font-sans text-[11px] font-bold text-gray-600">您的称呼 (Name, 必填)</label>
-                <input
-                  type="text"
-                  required
-                  value={visitorName}
-                  onChange={(e) => setVisitorName(e.target.value)}
-                  placeholder="e.g. 读者朋友"
-                  className="h-10 rounded-xl border border-gray-100 bg-white px-3 font-sans text-xs text-gray-700 shadow-3xs outline-hidden transition-all focus:border-gray-200"
-                />
-              </div>
-              <div className="flex flex-col gap-1">
-                <label className="font-sans text-[11px] font-bold text-gray-600">电子邮箱 (Email, 可选 - 不公开)</label>
-                <input
-                  type="email"
-                  value={visitorEmail}
-                  onChange={(e) => setVisitorEmail(e.target.value)}
-                  placeholder="e.g. sample@example.com"
-                  className="h-10 rounded-xl border border-gray-100 bg-white px-3 font-sans text-xs text-gray-700 shadow-3xs outline-hidden transition-all focus:border-gray-200"
-                />
-              </div>
-            </div>
-          )}
-
           {/* Comment text area */}
           <div className="flex flex-col gap-1.5">
             {user && (
@@ -423,18 +394,19 @@ export default function BlogDetail({ post, user, onBack, onLogin, onRefresh }: B
             )}
             <textarea
               required
+              disabled={!user}
               value={newComment}
               onChange={(e) => setNewComment(e.target.value)}
-              placeholder="请输入您有深度与善意的讨论内容，最多输入1000格字..."
+              placeholder={user ? "请输入您有深度与善意的讨论内容，最多输入1000格字..." : "请登录后发表评论..."}
               rows={3}
               maxLength={1000}
-              className="w-full rounded-xl border border-gray-100 bg-white p-3.5 font-sans text-sm text-gray-800 shadow-3xs outline-hidden transition-all focus:border-gray-200 focus:ring-2 focus:ring-gray-100"
+              className="w-full rounded-xl border border-gray-100 bg-white p-3.5 font-sans text-sm text-gray-800 shadow-3xs outline-hidden transition-all focus:border-gray-200 focus:ring-2 focus:ring-gray-100 disabled:opacity-60 disabled:bg-gray-50 disabled:cursor-not-allowed"
               id="comment-textarea"
             />
             
             <div className="mt-1 flex flex-col sm:flex-row justify-between sm:items-center gap-2 text-xs text-gray-400">
               <span className="flex items-center gap-1 font-sans">
-                {!user ? '💡 游客亦可直接留言发表评论。' : '✔️ 登录用户发表评论更为便捷。'}
+                {!user ? '💡 请先登录账号后再发表您的评论与见解。' : '✔️ 欢迎发表您的评论与见解。'}
               </span>
               <div className="flex items-center gap-3">
                 {!user && (
@@ -443,12 +415,12 @@ export default function BlogDetail({ post, user, onBack, onLogin, onRefresh }: B
                     onClick={onLogin}
                     className="font-sans text-xs text-sky-600 hover:underline cursor-pointer"
                   >
-                    或点击此处快捷登录账号
+                    点击此处快捷登录
                   </button>
                 )}
                 <button
                   type="submit"
-                  disabled={!newComment.trim() || (!user && !visitorName.trim())}
+                  disabled={!user || !newComment.trim()}
                   className="flex items-center gap-1.5 self-end rounded-full bg-gray-900 px-4 py-1.5 font-sans text-xs font-semibold text-white shadow-xs transition-opacity hover:opacity-90 disabled:opacity-40 cursor-pointer"
                   id="submit-comment-btn"
                 >
